@@ -6,7 +6,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -27,9 +31,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
@@ -60,10 +70,34 @@ fun Animation(m: Modifier){
     var expanded by remember { mutableStateOf(true) }  //背景延展
     var fly by remember { mutableStateOf(false) }  //火箭升空
 
-    Column {
+    //角度動畫
+    val buttonAngle by animateFloatAsState(
+        if (appear) 360f else 0f,
+        animationSpec = tween(durationMillis = 2500)
+    )
+
+    //顏色動畫
+    val backgroundColor by animateColorAsState(
+        if (appear) Color.Transparent else Color.Red,
+        animationSpec = tween(2000, 500)
+    )
+    //大小動畫
+    val rocketSize by animateDpAsState(
+        if (fly) 75.dp else 150.dp,
+        animationSpec = tween(2000)
+    )
+
+    //位移動畫
+    val rocketOffset by animateOffsetAsState(
+        if (fly) Offset(200f, -50f) else Offset(200f, 400f),
+        animationSpec = tween(2000)
+    )
+
+
+    Column (Modifier.background(backgroundColor)){
         Button(
             onClick = { appear = !appear },
-            modifier = m
+            modifier = Modifier.rotate(buttonAngle)
         ) {
             if (appear) Text(text = "星空背景圖消失")
             else Text(text = "星空背景圖出現")
@@ -83,9 +117,6 @@ fun Animation(m: Modifier){
                 animationSpec = tween(durationMillis = 5000)) { fullWidth ->
                 fullWidth / 3
             }
-
-
-
         ) {
             Image(
                 painter = painterResource(id = R.drawable.sky),
@@ -98,9 +129,21 @@ fun Animation(m: Modifier){
                     ) {
                         expanded = !expanded
                     }
+            )
+            Image(
+                painter = painterResource(id = R.drawable.rocket),
+                contentDescription = "火箭",
+                modifier = Modifier
+                .size(rocketSize)
+                .offset(rocketOffset.x.dp, rocketOffset.y.dp)
+                    .clickable(
+                    ) {
+                        fly = !fly
+                    }
 
             )
         }
     }
 }
+
 
